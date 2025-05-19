@@ -4,8 +4,8 @@ from typing import Optional
 
 from langchain_community.llms.koboldai import KoboldApiLLM
 from langchain_huggingface.embeddings.huggingface import HuggingFaceEmbeddings
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from .validation_methods import validate_string
 
