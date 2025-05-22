@@ -8,10 +8,10 @@ from langchain_core.tools import tool
 from langchain_core.messages.ai import AIMessage
 from langgraph.prebuilt import create_react_agent
 
-from components.agents.RAG.rag_agent import create_rag_agent
-from components.agents.web_search_agent import create_web_search_agent
-from components.agents.exam_question_agent import create_exam_question_gen_agent
-from components.validation_methods import validate_llm
+from backend.core.agents.RAG.rag_agent import create_rag_agent
+from backend.core.agents.web_search_agent import create_web_search_agent
+from backend.core.agents.exam_question_agent import create_exam_question_gen_agent
+from backend.core.validation_methods import validate_llm
 
 ASSISTANT_PROMPT = """
 You are an AI assistant that can answer questions on a given topic and also prepare exam-style questions and answers on that topic.
