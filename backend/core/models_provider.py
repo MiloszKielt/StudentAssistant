@@ -2,7 +2,6 @@ import os
 from abc import ABC
 from typing import Optional
 
-from langchain_community.llms.koboldai import KoboldApiLLM
 from langchain_huggingface.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -45,39 +44,6 @@ class LLMFactory(ABC):
             raise ValueError("Temperature must be in range [0, 1]!")
         
         return ChatOpenAI(api_key=openai_api_key, model=model, temperature=temperature)
-    
-    @staticmethod
-    def koboldAPI(endpoint: Optional[str] = None, temperature: float = 0, max_length: int = 500) -> KoboldApiLLM:
-        """Provides a Kobold LLM model from API according to given parameters. The endpoint is loaded by default from .env with KOBOLD_API, if not specified it will be loaded from parameter.
-        
-        Args:
-            endpoint (str, optional): API for kobold model. Defaults to None.
-            temperature (float, optional): base temperature of the LLM. Defaults to 0.
-            max_length (int, optional): maximal number of tokens of the response. Defaults to 500.
-
-        Raises:
-            ValueError: Endpoint must be provided as a nonempty string!
-            ValueError: Temperature must be in range [0, 1]!
-            ValueError: Max number of response tokens must be at least 100!
-
-        Returns:
-            KoboldApiLLM: Kobold LLM from API
-        """
-        
-        kobold_api = os.getenv("KOBOLD_API")
-        if not kobold_api:
-            if not validate_string(endpoint):
-                raise ValueError("Endpoint must be provided as a nonempty string!")
-            else: 
-                kobold_api = endpoint
-                
-        if not LLMFactory.__validateTemperature(temperature):
-            raise ValueError("Temperature must be in range [0, 1]!")
-        
-        if not isinstance(max_length, int) or max_length < 100:
-            raise ValueError("Max number of response tokens must be at least 100!")
-                
-        return KoboldApiLLM(endpoint=kobold_api, temperature=temperature, max_length=max_length)
     
     @staticmethod
     def ollama(model: str = "llama3.2", temperature: float = 0) -> ChatOllama:
