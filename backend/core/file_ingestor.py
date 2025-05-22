@@ -1,8 +1,10 @@
-from langchain_unstructured import UnstructuredLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_unstructured import UnstructuredLoader
+
 from backend.config import Config
+
 
 class FileIngestor:
     def __init__(self):

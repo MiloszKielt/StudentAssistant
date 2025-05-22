@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import List, Optional, Set, Dict, Type
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, BSHTMLLoader, UnstructuredMarkdownLoader, UnstructuredWordDocumentLoader, UnstructuredPowerPointLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, BSHTMLLoader, UnstructuredMarkdownLoader, \
+    UnstructuredWordDocumentLoader, UnstructuredPowerPointLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents.base import Document
 from langchain_core.embeddings import Embeddings

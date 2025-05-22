@@ -3,7 +3,6 @@ from typing import Union, Optional
 
 from langchain_core.embeddings import Embeddings
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.language_models.llms import LLM
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
@@ -16,7 +15,7 @@ Use available tool 'document_lookup' to retrieve relevant question related conte
 If you don't know the answer respond 'No context available for this question.'
 """
 
-def create_rag_agent(llm: Union[LLM, BaseChatModel], embedding_model: Embeddings, documents_path: Optional[Union[str, Path]] = None):
+def create_rag_agent(llm: BaseChatModel, embedding_model: Embeddings, documents_path: Optional[Union[str, Path]] = None):
     if not validate_llm(llm):
         raise ValueError("LLM must be of type LLM or BaseChatModel and support function calling!")
     

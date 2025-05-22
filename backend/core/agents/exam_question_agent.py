@@ -1,10 +1,7 @@
-from typing import Union
-
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.language_models.llms import LLM
 from langgraph.prebuilt import create_react_agent
 
-from components.validation_methods import validate_llm
+from backend.core.validation_methods import validate_llm
 
 EXAM_QUESTION_GENERATION_AGENT_PROMPT = """
 You are an agent responsible for creating exam-style questions for the given topic.
@@ -19,7 +16,7 @@ After preparing the questions provide answers for each of them in following form
     ...
 """
 
-def create_exam_question_gen_agent(llm: Union[LLM, BaseChatModel]):
+def create_exam_question_gen_agent(llm: BaseChatModel):
     if not validate_llm(llm):
         raise ValueError("LLM must be of type LLM or BaseChatModel and support function calling!")
     
