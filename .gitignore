@@ -175,5 +175,3 @@ cython_debug/
 
 # Custom
 documents/
-storage/uploads/
-storage/vector_db/
