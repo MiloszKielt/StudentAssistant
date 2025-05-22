@@ -7,8 +7,8 @@ from langchain_core.language_models.llms import LLM
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-from components.agents.RAG.vector_store import VectorStoreProvider
-from components.validation_methods import validate_string, validate_llm
+from backend.core.agents.RAG.vector_store import VectorStoreProvider
+from backend.core.validation_methods import validate_string, validate_llm
 
 RAG_PROMPT = """
 You are an agent responsible for providing detailed information for the given question.
