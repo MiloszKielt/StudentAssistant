@@ -1,23 +1,31 @@
-from langchain_core.language_models.chat_models import BaseChatModel
+from dataclasses import dataclass
+from typing import ClassVar
+
 from langgraph.prebuilt import create_react_agent
 
-from backend.core.validation_methods import validate_llm
+from backend.core.agents.base_agent import BaseAgent
 
-EXAM_QUESTION_GENERATION_AGENT_PROMPT = """
-You are an agent responsible for creating exam-style questions for the given topic.
-Prepare as many as requested exam-style open questions for provided topic in this format:
-    1. <question 1>
-    2. <question 2>
-    ...
 
-After preparing the questions provide answers for each of them in following format:
-    1. <answer for question 1>
-    2. <answer for question 2>
-    ...
-"""
+@dataclass
+class ExamGenAgent(BaseAgent):
+    __DEFAULT_PROMPT: ClassVar[str] = """
+        You are an agent responsible for creating exam-style questions for the given topic.
+        Prepare as many as requested exam-style open questions for provided topic in this format:
+            1. <question 1>
+            2. <question 2>
+            ...
 
-def create_exam_question_gen_agent(llm: BaseChatModel):
-    if not validate_llm(llm):
-        raise ValueError("LLM must be of type LLM or BaseChatModel and support function calling!")
+        After preparing the questions provide answers for each of them in following format:
+            1. <answer for question 1>
+            2. <answer for question 2>
+            ...
+        """
+
+    def __post_init__(self):
+        if not hasattr(self, 'prompt') or self.prompt is None:
+            self.prompt = self.__DEFAULT_PROMPT
+            
+        super().__post_init__()
     
-    return create_react_agent(llm, tools=[], prompt=EXAM_QUESTION_GENERATION_AGENT_PROMPT)
+    def _create_agent(self):
+        return create_react_agent(self.llm, tools=[], prompt=self.prompt)
