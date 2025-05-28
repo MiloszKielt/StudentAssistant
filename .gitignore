@@ -174,5 +174,5 @@ cython_debug/
 .pypirc
 
 # Custom
-documents/
+storage/uploads/*
 .idea/
