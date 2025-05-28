@@ -30,3 +30,10 @@ class BaseAgent(ABC):
         
         response = self.graph.invoke({'messages': [('user', question)]})
         return next((msg.content for msg in response['messages'] if isinstance(msg, AIMessage) and msg.content), None)
+    
+    async def ainvoke(self, question: str) -> Optional[Union[str, List[Union[str, Dict]]]]:
+        if not validate_string(question):
+            raise ValueError("Question must be a valid nonempty string!")
+        
+        response = await self.graph.ainvoke({'messages': [('user', question)]})
+        return next((msg.content for msg in response['messages'] if isinstance(msg, AIMessage) and msg.content), None)
