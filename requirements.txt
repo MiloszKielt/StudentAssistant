@@ -17,3 +17,4 @@ unstructured>=0.17.2
 wikipedia>=1.4.0
 fastapi>=0.95.0
 langchain_unstructured
+streamlit
