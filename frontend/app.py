@@ -16,7 +16,15 @@ if submit_files_button:
             st.write("File name:", uploaded_file.name)
             st.write("File type:", uploaded_file.type)
             st.write("File size:", uploaded_file.size)
-            st.success("File uploaded successfully!")
+            try:
+                response = requests.post(
+                    "http://localhost:8000/upload", 
+                    files={"file": uploaded_file}
+                )
+                # return response.json()
+                st.success(response)
+            except ConnectionRefusedError as e:
+                st.error("Connection error with backend")
     else:
         st.warning("Please upload at least one file.")
 
@@ -26,7 +34,7 @@ submit_question_button = st.button("Submit Question")
 if submit_question_button:
     if question:
         # Send the question to the backend API
-        response = requests.post("http://localhost:8000/query", json={"question": question})
+        response = requests.post("http://localhost:8000/query", json={"query": question})
         if response.status_code == 200:
             answer = response.json().get("answer")
             st.write("Answer:", answer)

@@ -16,4 +16,5 @@ sentence-transformers>=4.1.0
 unstructured>=0.17.2
 wikipedia>=1.4.0
 fastapi>=0.95.0
+jsonrpcserver>=5.0.9
 langchain_unstructured
