@@ -1,8 +1,10 @@
-from fastapi import UploadFile, HTTPException, FastAPI
-from core.file_ingestor import FileIngestor
-from config import Config
-from pydantic import BaseModel
 import os
+
+from fastapi import UploadFile, HTTPException, FastAPI
+from pydantic import BaseModel
+
+from config import Config
+from core.file_ingestor import FileIngestor
 
 app = FastAPI()
 ingestor = FileIngestor()

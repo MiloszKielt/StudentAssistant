@@ -1,73 +1,67 @@
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional, ClassVar
 
 from langchain_core.embeddings import Embeddings
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.language_models.llms import LLM
 from langchain_core.tools import tool
-from langchain_core.messages.ai import AIMessage
 from langgraph.prebuilt import create_react_agent
 
-from backend.core.agents.RAG.rag_agent import create_rag_agent
-from backend.core.agents.web_search_agent import create_web_search_agent
-from backend.core.agents.exam_question_agent import create_exam_question_gen_agent
-from backend.core.validation_methods import validate_llm
+from backend.core.agents.RAG.rag_agent import RAGAgent
+from backend.core.agents.base_agent import BaseAgent
+from backend.core.agents.exam_question_agent import ExamGenAgent
+from backend.core.agents.web_search_agent import WebSearchAgent
 
-ASSISTANT_PROMPT = """
-You are an AI assistant that can answer questions on a given topic and also prepare exam-style questions and answers on that topic.
-You are equipped with specific tools which allow you to properly respond to received question.
-First familiarize yourself with the given topic using 'use_rag' tool. If you decide you need more information use 'use_web' tool to expand your knowledgebase related to given topic.
 
-Optionally is user asks you to generate questions on related topic use tool 'use_exam_gen' with retrieved data on the topic as a context.
-"""
+@dataclass
+class AssistantAgent(BaseAgent):
+    __DEFAULT_PROMPT: ClassVar[str] = """
+    You are an AI assistant that can answer questions on a given topic and also prepare exam-style questions and answers on that topic.
+    You are equipped with specific tools which allow you to properly respond to received question.
+    First familiarize yourself with the given topic using 'use_rag' tool. If you decide you need more information use 'use_web' tool to expand your knowledgebase related to given topic.
 
-def invoke(graph, question: str):
-    response = graph.invoke({'messages': [('user', question)]})
-    # print(f"Tool call: {graph.name}")
-    # print(next((msg.content for msg in response['messages'] if isinstance(msg, ToolMessage) and msg.content), None))
-    # print('-'*99)
-    return next((msg.content for msg in response['messages'] if isinstance(msg, AIMessage) and msg.content), None)
-
-def create_assistant_agent(llm: Union[LLM, BaseChatModel], embedding_model: Embeddings, documents_path: Union[Path, str] = None):
-    if not validate_llm(llm):
-        raise ValueError("LLM must be of type LLM or BaseChatModel and support function calling!")
+    Optionally if user asks you to generate questions on related topic use tool 'use_exam_gen' with retrieved data on the topic as a context.
+    """
     
-    if not isinstance(embedding_model, Embeddings):
-        raise ValueError("Embedding model must be valid!")
+    embedding_model: Embeddings
+    documents_path: Optional[Union[str, Path]] = None
+    tavily_max_results: int = 5
     
-    rag = create_rag_agent(llm, embedding_model)
-    web_search = create_web_search_agent(llm)
-    exam_generation = create_exam_question_gen_agent(llm)
+    def __post_init__(self):
+        if not hasattr(self, 'prompt') or self.prompt is None:
+            self.prompt = self.__DEFAULT_PROMPT
+            
+        super().__post_init__()
     
-    @tool
-    def use_rag(question: str):
-        """Retrieves context relevant to the question from locally stored documents.
+    def _create_agent(self):
+        rag_agent = RAGAgent(self.llm, self.embedding_model, self.documents_path)
+        web_agent = WebSearchAgent(self.llm, self.tavily_max_results)
+        exam_agent = ExamGenAgent(self.llm)
+        
+        @tool
+        def use_rag(question: str) -> str:
+            """Retrieves context relevant to the question from locally stored documents.
 
-        Args:
-            question (str): given question
+            Args:
+                question (str): given question
+            """
+            return rag_agent.invoke(question)
+        
+        @tool
+        def use_web(question: str) -> str:
+            """Retrieves context relevant to the question from web search and/or wikipedia.
 
-        """
-        return invoke(rag, question)
-    
-    @tool
-    def use_web(question: str):
-        """Retrieves context relevant to the question from web search and/or wikipedia.
+            Args:
+                question (str): given question
+            """
+            return web_agent.invoke(question)
+        
+        @tool
+        def use_exam_gen(question: str) -> str:
+            """Generates a set of exam-style questions and answers related to provided topic and its context.
 
-        Args:
-            question (str): given question
-
-        """
-        return invoke(web_search, question)
-    
-    @tool
-    def use_exam_gen(question: str):
-        """Generates a set of exam-style questions and answers related to provied topic and its context.
-
-        Args:
-            question (str): given question and its related context
-
-        """
-        return invoke(exam_generation, question)
-    
-    return create_react_agent(llm, tools=[use_rag, use_web, use_exam_gen], prompt=ASSISTANT_PROMPT)
-    
+            Args:
+                question (str): given question and its related context
+            """
+            return exam_agent.invoke(question)
+        
+        return create_react_agent(self.llm, tools=[use_rag, use_web, use_exam_gen], prompt=self.prompt)
