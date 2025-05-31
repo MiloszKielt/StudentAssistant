@@ -2,18 +2,48 @@ import logging
 from jsonrpcserver import serve, method, Success, Error
 from backend.core.agents.web_search_agent import WebSearchAgent
 from backend.core.agents.exam_question_agent import ExamGenAgent
+from backend.core.models_provider import LLMFactory, EmbeddingFactory
 
-logging.basicConfig(level=logging.INFO)
+from dotenv import load_dotenv
 
-web_agent = WebSearchAgent()
-exam_agent = ExamGenAgent()
+load_dotenv(".env")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # Console output
+        logging.FileHandler('study_assistant.log')  # File output
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+web_agent = WebSearchAgent(LLMFactory.openai())
+exam_agent = ExamGenAgent(LLMFactory.openai())
 
 @method
 def listTools():
-    logging.info("→ listTools called")
-    return Success([{
+    logger.info("listTools called")
+    return Success([
+        {
         "name": "search_web",
         "description": "Search the Internet and return 3 to 7 paragraphs-long answer of relevant information or the message saying 'no context available for this question'.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string"}
+            },
+            "required": ["query"]
+        }
+        },
+        {
+        "name": "create_exam_questions",
+        "description": """Prepare as many as requested exam-style open questions for provided topic in this format:
+            1. <question 1>
+            2. <question 2>
+            ...
+            """,
         "parameters": {
             "type": "object",
             "properties": {
@@ -25,20 +55,32 @@ def listTools():
 
 @method
 def callTool(tool: str, args: dict):
-    logging.info(f"→ callTool called with tool={tool!r}, args={args!r}")
-    if tool != "search_web":
+    logger.info(f"callTool called with tool={tool!r}, args={args!r}")
+    if tool == "search_web":
         # MUST use (message:str)
-        return Error(1, f"Unsupported tool {tool!r}")
-    q = args.get("query", "")
-    try:
-        answer = web_agent.ainvoke(q)
-        logging.info(f"← callTool returning Success(payload of length {len(answer)})")
-        logging.debug(f"Payload: {answer}")
-        return Success(answer)
-    except Exception as e:
-        logging.exception("Web search failed")
-        return Error(2, f"Search failed: {e}")
+        q = args.get("query", "")
+        try:
+            answer = web_agent.invoke(q)
+            logger.info(f"callTool returning Success(payload of length {len(answer)})")
+            logger.debug(f"Payload: {answer}")
+            return Success(answer)
+        except Exception as e:
+            logger.exception("Web search failed")
+            return Error(2, f"Search failed: {e}")
+    
+    if tool == "create_exam_questions":
+        q = args.get("query", "")
+        try:
+            answer = exam_agent.invoke(q)
+            logger.info(f"callTool returning Success(payload of length {len(answer)})")
+            logger.debug(f"Payload: {answer}")
+            return Success(answer)
+        except Exception as e:
+            logger.exception("Exam creation failed")
+            return Error(2, f"Creation failed: {e}")
+        
+    return Error(1, f"Unsupported tool {tool!r}")
     
 
-print("Web search MCP server listening on http://localhost:4001")
+logger.info("Web search MCP server listening on http://localhost:4001")
 serve(port=4001)
