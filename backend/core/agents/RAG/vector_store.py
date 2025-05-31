@@ -11,7 +11,7 @@ from langchain_core.documents.base import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from core.validation_methods import validate_string
+from backend.core.validation_methods import validate_string
 
 
 @dataclass
@@ -30,7 +30,7 @@ class VectorStoreProvider:
     k: int = 4
     chunk_size: int = 1000
     chunk_overlap: int = 200
-    documents_path: Path = Path("../storage/uploads")
+    documents_path: Path = Path("storage/uploads")
     __retriever: Optional[VectorStoreRetriever] = field(default=None, init=False)
     __cached_documents: Dict[Path, float] = field(default_factory=dict, init=False)
     __loaders: Dict[str, Type] = field(init=False, default_factory=lambda: {

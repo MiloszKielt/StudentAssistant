@@ -6,7 +6,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages.ai import AIMessage
 from langgraph.graph.graph import CompiledGraph
 
-from core.validation_methods import validate_llm, validate_string
+from backend.core.validation_methods import validate_llm, validate_string
 
 
 @dataclass

@@ -6,8 +6,8 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-from core.agents.RAG.vector_store import VectorStoreProvider
-from core.agents.base_agent import BaseAgent
+from backend.core.agents.RAG.vector_store import VectorStoreProvider
+from backend.core.agents.base_agent import BaseAgent
 
 
 @dataclass
@@ -23,7 +23,7 @@ class RAGAgent(BaseAgent):
     vector_store: VectorStoreProvider = field(init=False)
     
     def __post_init__(self):
-        self.vector_store = (VectorStoreProvider(self.embedding_model, documents_path=self.documents_path) if self.documents_path else VectorStoreProvider(self.embedding_model))
+        self.vector_store = VectorStoreProvider(self.embedding_model, documents_path=self.documents_path) if self.documents_path else VectorStoreProvider(self.embedding_model)
         if not hasattr(self, 'prompt') or self.prompt is None:
             self.prompt = self.__DEFAULT_PROMPT
             
