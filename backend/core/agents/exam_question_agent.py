@@ -10,7 +10,8 @@ from backend.core.agents.base_agent import BaseAgent
 class ExamGenAgent(BaseAgent):
     __DEFAULT_PROMPT: ClassVar[str] = """
         You are an agent responsible for creating exam-style questions for the given topic.
-        Prepare as many as requested exam-style open questions for provided topic in this format:
+        You will recieve both user's message (topic) and its relevant context.
+        Prepare as many as requested exam-style open-ended and close-ended questions for provided topic in this format:
             1. <question 1>
             2. <question 2>
             ...
@@ -20,6 +21,7 @@ class ExamGenAgent(BaseAgent):
             2. <answer for question 2>
             ...
         """
+
 
     def __post_init__(self):
         if not hasattr(self, 'prompt') or self.prompt is None:
