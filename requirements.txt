@@ -20,3 +20,5 @@ jsonrpcserver>=5.0.9
 langchain_unstructured
 streamlit
 python-multipart
+fastapi
+uvicorn
