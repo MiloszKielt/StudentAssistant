@@ -12,7 +12,7 @@ from backend.api.data.query_response import QueryResponse
 load_dotenv()
 logger = logging.getLogger(__name__)
 app = FastAPI()
-assistant = AssistantAgent(LLMFactory.openai(), EmbeddingFactory.openai())
+assistant = AssistantAgent(LLMFactory.openai(), EmbeddingFactory.huggingface())
 
 logging.basicConfig(
     level=logging.INFO,

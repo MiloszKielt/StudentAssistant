@@ -22,7 +22,7 @@ class TaskPlanner(BaseAgent):
             Only output a QUES line when there's an explicit exam question request
             Maintain identical numbering between related MAIN/QUES pairs
             If multiple QUES exist for one MAIN, use sub-numbering (QUES 3.1, QUES 3.2)
-            If QUES is ambigious to what topic its related insert the topic into QUES.
+            Insert the topic into QUES.
 
             Output format examples:
                 MAIN 1: <primary task without questions>
