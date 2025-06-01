@@ -1,20 +1,22 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union, Optional, TypedDict, Literal, Dict
+import logging
+import os
 
 from langchain_core.embeddings import Embeddings
 from langgraph.graph import StateGraph, END
 from langsmith import traceable
 
-from backend.core.agents.RAG.rag_agent import RAGAgent
-from backend.core.agents.assistant.decision_agent import ContextDecisionAgent
-from backend.core.agents.assistant.summarize_agent import SummarizeAgent
-from backend.core.agents.assistant.task_planner import TaskPlanner
+from backend.api.agents.RAG.rag_agent import RAGAgent
+from backend.api.agents.assistant.decision_agent import ContextDecisionAgent
+from backend.api.agents.assistant.summarize_agent import SummarizeAgent
+from backend.api.agents.assistant.task_planner import TaskPlanner
 from backend.core.agents.base_agent import BaseAgent
-from backend.core.agents.exam_question_agent import ExamGenAgent
-from backend.core.agents.web_search_agent import WebSearchAgent
 from backend.core.validation_methods import validate_string
+from backend.api.mcp_client import MCPClient
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class AssistantAgent(BaseAgent):
@@ -59,10 +61,9 @@ class AssistantAgent(BaseAgent):
     def _create_agent(self):
         task_planner = TaskPlanner(self.llm)
         rag_agent = RAGAgent(self.llm, self.embedding_model, self.documents_path)
-        web_agent = WebSearchAgent(self.llm, self.tavily_max_results)
-        exam_agent = ExamGenAgent(self.llm)
         ctx_decision_agent = ContextDecisionAgent(self.llm)
         summarize_agent = SummarizeAgent(self.llm)
+        mcp_client = MCPClient(f"http://localhost:{os.getenv('MCP_PORT', '8000')}")
         
         MAX_ITERATIONS = 3
         
@@ -97,7 +98,7 @@ class AssistantAgent(BaseAgent):
             return state
         
         @traceable(name="Web search")
-        def web_node(state: AssistantState) -> AssistantState:
+        async def web_node(state: AssistantState) -> AssistantState:
             for num, task in state['tasks_'].items():
                 if state['context_decisions_'][num] == 'Yes':
                     continue
@@ -106,22 +107,24 @@ class AssistantAgent(BaseAgent):
 
                 if context == 'No context available for this question.':
                     context = ''
-                    
-                state['context_'][num] = context + web_agent.invoke(task)
+                
+                logger.info(f"Calling mcp server for web search with context: {context}")
+                state['context_'][num] = context + await mcp_client.call_tool("search_web", {"query": task})
                 
             state['web_search_iterations'] += 1
             
             return state
         
         @traceable(name="Generate questions")
-        def question_node(state: AssistantState) -> AssistantState:
+        async def question_node(state: AssistantState) -> AssistantState:
             for num, ques in state['question_tasks_'].items():
                 if not ques:
                     continue
                     
                 context = state['context_'].get(num, '')
-
-                state['generated_questions_'][num] = exam_agent.invoke(f"MESSAGE: {ques}\nCONTEXT: {context}")
+                
+                logger.info(f"Calling mcp server for question generation")
+                state['generated_questions_'][num] = await mcp_client.call_tool("create_exam_questions", {"query": ques})
             
             return state
         

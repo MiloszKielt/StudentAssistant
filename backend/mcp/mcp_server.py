@@ -1,10 +1,13 @@
 import logging
-from jsonrpcserver import serve, method, Success, Error
-from backend.core.agents.web_search_agent import WebSearchAgent
-from backend.core.agents.exam_question_agent import ExamGenAgent
-from backend.core.models_provider import LLMFactory, EmbeddingFactory
 
 from dotenv import load_dotenv
+from jsonrpcserver import serve, method, Success, Error
+
+from backend.mcp.agents.web_search_agent import WebSearchAgent
+from backend.mcp.agents.exam_question_agent import ExamGenAgent
+from backend.core.models_provider import LLMFactory
+from backend.config import Config
+
 
 load_dotenv(".env")
 
@@ -83,4 +86,4 @@ def callTool(tool: str, args: dict):
     
 
 logger.info("Web search MCP server listening on http://localhost:4001")
-serve(port=4001)
+serve(port=Config.MCP_PORT)

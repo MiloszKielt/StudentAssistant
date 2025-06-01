@@ -6,7 +6,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-from backend.core.agents.RAG.vector_store import VectorStoreProvider
+from backend.api.agents.RAG.vector_store import VectorStoreProvider
 from backend.core.agents.base_agent import BaseAgent
 
 
