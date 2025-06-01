@@ -12,4 +12,15 @@ This is the recommended approach since [UV](https://docs.astral.sh/uv/) handles 
 ```
 pip install -r requirements.txt
 ```
+
+#### Running the program
+After installing required dependencies to run the entire program you need to run its 3 seperate elements using these commands (from the base folder of the project):
+
+```
+python -m backend.mcp.mcp_server
+uvicorn backend.api.api:app --port 8000
+streamlit run frontend/app.py
+```
+
+
 ## Features
