@@ -19,3 +19,4 @@ fastapi>=0.95.0
 jsonrpcserver>=5.0.9
 langchain_unstructured
 streamlit
+python-multipart
