@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Union, List, Dict
+from typing import Optional, List, Dict
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages.ai import AIMessage

@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from backend.core.agents.base_agent import BaseAgent
-from langgraph.prebuilt import create_react_agent
-
 from typing import ClassVar
 
+from langgraph.prebuilt import create_react_agent
 
+from backend.core.agents.base_agent import BaseAgent
+
+
+@dataclass
 class SummarizeAgent(BaseAgent):
     __DEFAULT_PROMPT: ClassVar[str] = """
         You are an expert assistant tasked with providing clear, accurate, and concise summaries in response to user questions.
