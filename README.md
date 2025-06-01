@@ -22,5 +22,11 @@ uvicorn backend.api.api:app --port 8000
 streamlit run frontend/app.py
 ```
 
+Alternatively run it with docker:
+
+```
+docker-compose build
+docker-compose up
+```
 
 ## Features
