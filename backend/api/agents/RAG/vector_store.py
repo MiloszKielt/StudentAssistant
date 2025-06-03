@@ -1,3 +1,5 @@
+import json
+import pickle
 from dataclasses import dataclass, field
 from itertools import chain
 from pathlib import Path
@@ -31,6 +33,7 @@ class VectorStoreProvider:
     chunk_size: int = 1000
     chunk_overlap: int = 200
     documents_path: Path = Path("storage/uploads")
+    vectorstore_path: Path = Path("storage/vector_db")
     __retriever: Optional[VectorStoreRetriever] = field(default=None, init=False)
     __cached_documents: Dict[Path, float] = field(default_factory=dict, init=False)
     __loaders: Dict[str, Type] = field(init=False, default_factory=lambda: {
@@ -57,8 +60,15 @@ class VectorStoreProvider:
                 raise ValueError("Path to documents must be a Path object!")
             else:
                 self.documents_path = Path(self.documents_path)
+                
+        if not isinstance(self.vectorstore_path, Path):
+            if not validate_string(self.vectorstore_path):
+                raise ValueError("Path to vectorstore must be a Path object!")
+            else:
+                self.vectorstore_path = Path(self.vectorstore_path)
 
         self.documents_path.mkdir(exist_ok=True)
+        self.vectorstore_path.mkdir(exist_ok=True)
         self.__documents_changed_check()
 
     @property
@@ -101,11 +111,63 @@ class VectorStoreProvider:
                 raise ValueError("There must be at least one document in documents folder!")
             self.__chunks = list(chain.from_iterable(self.__load_and_split_document(doc) for doc in self.__cached_documents.keys() if doc.name != '.gitignore'))
         return self.__chunks
+    
+    def __get_state_file(self) -> Path:
+        return self.vectorstore_path / "state.json"
+
+    def __save_state(self):
+        state = {
+            "documents": {str(path): mtime for path, mtime in self.__cached_documents.items()},
+            "chunk_size": self.chunk_size,
+            "chunk_overlap": self.chunk_overlap,
+            "k": self.k
+        }
+        with open(self.__get_state_file(), 'w') as f:
+            json.dump(state, f)
+
+    def __load_state(self) -> Optional[dict]:
+        state_file = self.__get_state_file()
+        if not state_file.exists():
+            return None
+        with open(state_file, 'r') as f:
+            return json.load(f)
+
+    def __should_rebuild_vectorstore(self) -> bool:
+        current_state = {
+            "documents": {str(path): path.stat().st_mtime for path in self.documents_files},
+            "chunk_size": self.chunk_size,
+            "chunk_overlap": self.chunk_overlap,
+            "k": self.k
+        }
+        saved_state = self.__load_state()
+        return saved_state != current_state
+
+    def __get_vectorstore_file(self) -> Path:
+        return self.vectorstore_path / "vectorstore.pkl"
+
+    def __save_vectorstore(self, vectorstore: FAISS):
+        with open(self.__get_vectorstore_file(), 'wb') as f:
+            pickle.dump(vectorstore, f)
+        self.__save_state()
+
+    def __load_vectorstore(self) -> Optional[FAISS]:
+        vectorstore_file = self.__get_vectorstore_file()
+        if not vectorstore_file.exists():
+            return None
+        with open(vectorstore_file, 'rb') as f:
+            return pickle.load(f)
 
     @property
     def retriever(self) -> VectorStoreRetriever:
         if not self.__retriever or self.__documents_changed_check():
+            if not self.__should_rebuild_vectorstore():
+                vectorstore = self.__load_vectorstore()
+                if vectorstore:
+                    self.__retriever = vectorstore.as_retriever(search_kwargs={"k": self.k})
+                    return self.__retriever
+                
             chunks = self.__load_and_split_documents()
             vectorstore = FAISS.from_documents(chunks, self.embedding_model)
+            self.__save_vectorstore(vectorstore)
             self.__retriever = vectorstore.as_retriever(search_kwargs={"k": self.k})
         return self.__retriever
