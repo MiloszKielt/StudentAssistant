@@ -17,7 +17,8 @@ class TaskPlanner(BaseAgent):
 
         Instructions:
             Analyze the user's input carefully
-            Identify and number all MAIN tasks sequentially (1, 2, 3...) and find if they are related to each other.
+            Identify and number all MAIN tasks sequentially (1, 2, 3...)
+            Identify if MAIN tasks are related to another. If so properly format them
             For each MAIN task, check if it contains or implies a question generation request
             Only output a QUES line when there's an explicit exam question request
             Maintain identical numbering between related MAIN/QUES pairs

@@ -1,8 +1,8 @@
+import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union, Optional, TypedDict, Literal, Dict
-import logging
-import os
 
 from langchain_core.embeddings import Embeddings
 from langgraph.graph import StateGraph, END
@@ -12,9 +12,9 @@ from backend.api.agents.RAG.rag_agent import RAGAgent
 from backend.api.agents.assistant.decision_agent import ContextDecisionAgent
 from backend.api.agents.assistant.summarize_agent import SummarizeAgent
 from backend.api.agents.assistant.task_planner import TaskPlanner
+from backend.api.mcp_client import MCPClient
 from backend.core.agents.base_agent import BaseAgent
 from backend.core.validation_methods import validate_string
-from backend.api.mcp_client import MCPClient
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ class AssistantAgent(BaseAgent):
                 context = state['context_'].get(num, '')
                 
                 logger.info(f"Calling mcp server for question generation")
-                state['generated_questions_'][num] = await mcp_client.call_tool("create_exam_questions", {"query": ques})
+                state['generated_questions_'][num] = await mcp_client.call_tool("create_exam_questions", {"query": ques, "context": context})
             
             return state
         

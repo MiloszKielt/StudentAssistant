@@ -3,11 +3,10 @@ import logging
 from dotenv import load_dotenv
 from jsonrpcserver import serve, method, Success, Error
 
-from backend.mcp.agents.web_search_agent import WebSearchAgent
-from backend.mcp.agents.exam_question_agent import ExamGenAgent
-from backend.core.models_provider import LLMFactory
 from backend.config import Config
-
+from backend.core.models_provider import LLMFactory
+from backend.mcp.agents.exam_question_agent import ExamGenAgent
+from backend.mcp.agents.web_search_agent import WebSearchAgent
 
 load_dotenv(".env")
 
@@ -73,8 +72,9 @@ def callTool(tool: str, args: dict):
     
     if tool == "create_exam_questions":
         q = args.get("query", "")
+        c = args.get("context", "")
         try:
-            answer = exam_agent.invoke(q)
+            answer = exam_agent.invoke(f"MESSAGE:\n{q}\n\nCONTEXT:{c}\n\n")
             logger.info(f"callTool returning Success(payload of length {len(answer)})")
             logger.debug(f"Payload: {answer}")
             return Success(answer)
