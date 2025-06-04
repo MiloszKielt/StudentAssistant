@@ -49,7 +49,8 @@ def listTools():
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string"}
+                "query": {"type": "string"},
+                "context": {"type": "string"}
             },
             "required": ["query"]
         }
