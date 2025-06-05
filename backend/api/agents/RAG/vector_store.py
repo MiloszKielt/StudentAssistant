@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from itertools import chain
 from pathlib import Path
 from typing import List, Optional, Set, Dict, Type
+import logging
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, BSHTMLLoader, UnstructuredMarkdownLoader, \
@@ -15,6 +16,7 @@ from langchain_core.vectorstores import VectorStoreRetriever
 
 from backend.core.validation_methods import validate_string
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class VectorStoreProvider:
@@ -161,6 +163,7 @@ class VectorStoreProvider:
     def retriever(self) -> VectorStoreRetriever:
         if not self.__retriever or self.__documents_changed_check():
             if not self.__should_rebuild_vectorstore():
+                logger.info("Loading info from vectorstore...")
                 vectorstore = self.__load_vectorstore()
                 if vectorstore:
                     self.__retriever = vectorstore.as_retriever(search_kwargs={"k": self.k})
