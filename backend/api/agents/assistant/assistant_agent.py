@@ -63,7 +63,7 @@ class AssistantAgent(BaseAgent):
         rag_agent = RAGAgent(self.llm, self.embedding_model, self.documents_path)
         ctx_decision_agent = ContextDecisionAgent(self.llm)
         summarize_agent = SummarizeAgent(self.llm)
-        mcp_client = MCPClient(f"http://localhost:{os.getenv('MCP_PORT', '8000')}")
+        mcp_client = MCPClient(f"http://{os.getenv('MCP_HOST', 'localhost')}:{os.getenv('MCP_PORT', '8000')}")
         
         MAX_ITERATIONS = 3
         

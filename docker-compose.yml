@@ -8,6 +8,7 @@ services:
     command: python -m backend.mcp.mcp_server
     environment:
       - MCP_PORT=${MCP_PORT}
+      - MCP_HOST=mcp_server
     ports:
       - "${MCP_PORT}:${MCP_PORT}"
     volumes:
@@ -22,6 +23,7 @@ services:
     command: uvicorn backend.api.api:app --host 0.0.0.0 --port ${API_PORT}
     environment:
       - API_PORT=${API_PORT}
+      - API_HOST=api
     ports:
       - "${API_PORT}:${API_PORT}"
     volumes:
@@ -36,6 +38,7 @@ services:
     command: streamlit run frontend/app.py --server.port ${FRONTEND_PORT} --server.address 0.0.0.0
     environment:
       - FRONTEND_PORT=${FRONTEND_PORT}
+      - FRONTEND_HOST=frontend
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
