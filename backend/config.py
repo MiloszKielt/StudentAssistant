@@ -1,6 +1,9 @@
 import os
 
 class Config:
+    """Configuration class for the Student Assistant application.
+    This class holds configuration settings such as model names, API keys, and directory paths.
+    """
     EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
     LLM_MODEL = "gpt-4o-mini"
     VECTOR_DB_DIR = "./storage/vector_db"

@@ -7,6 +7,7 @@ from typing import Union, Optional, TypedDict, Literal, Dict
 from langchain_core.embeddings import Embeddings
 from langgraph.graph import StateGraph, END
 from langsmith import traceable
+from langgraph.graph.state import CompiledStateGraph
 
 from backend.api.agents.RAG.rag_agent import RAGAgent
 from backend.api.agents.assistant.decision_agent import ContextDecisionAgent
@@ -25,7 +26,19 @@ class AssistantAgent(BaseAgent):
     tavily_max_results: int = 5
     
     @traceable(name="Assistant Agent")
-    def invoke(self, question: str):
+    def invoke(self, question: str) -> str:
+        """
+        Invokes the assistant agent with a given question.
+
+        Args:
+            question (str): The question to be answered by the agent.
+
+        Raises:
+            ValueError: If the question is not a valid nonempty string.
+
+        Returns:
+            str: The answer to the question provided by the agent.
+        """
         if not validate_string(question):
             raise ValueError("Question must be a valid nonempty string!")
         
@@ -42,7 +55,20 @@ class AssistantAgent(BaseAgent):
         return response['result']
     
     @traceable(name="Assistant Agent")
-    async def ainvoke(self, question: str):
+    async def ainvoke(self, question: str) -> str:
+        """
+        Asynchronously invokes the assistant agent with a given question.
+        This method is designed to handle the question and return the result asynchronously.
+
+        Args:
+            question (str): The question to be answered by the agent.
+
+        Raises:
+            ValueError: If the question is not a valid nonempty string.
+
+        Returns:
+            str: The answer to the question provided by the agent.
+        """
         if not validate_string(question):
             raise ValueError("Question must be a valid nonempty string!")
         
@@ -58,7 +84,13 @@ class AssistantAgent(BaseAgent):
         })
         return response['result']
     
-    def _create_agent(self):
+    def _create_agent(self) -> CompiledStateGraph:
+        """
+        Creates the workflow for the assistant agent.
+
+        Returns:
+            CompiledStateGraph: A compiled state graph representing the workflow of the assistant agent.
+        """
         task_planner = TaskPlanner(self.llm)
         rag_agent = RAGAgent(self.llm, self.embedding_model, self.documents_path)
         ctx_decision_agent = ContextDecisionAgent(self.llm)
@@ -68,6 +100,11 @@ class AssistantAgent(BaseAgent):
         MAX_ITERATIONS = 3
         
         class AssistantState(TypedDict):
+            """
+            Typed dictionary representing the state of the assistant agent.
+            This state includes the message to be processed, the number of web search iterations,
+            the result of the processing, and various dictionaries to hold tasks, context, decisions, and generated questions.
+            """
             message: str
             web_search_iterations: int
             result: str
@@ -80,6 +117,14 @@ class AssistantAgent(BaseAgent):
         # Nodes
         @traceable(name="Task Planner")
         def task_planner_node(state: AssistantState) -> AssistantState:
+            """Node responsible for planning tasks based on the input message.
+
+            Args:
+                state (AssistantState): The current state of the assistant agent.
+
+            Returns:
+                AssistantState: The updated state after planning tasks.
+            """
             tasks_str = task_planner.invoke(state['message'])
             tasks = TaskPlanner.result_to_dict(tasks_str)
             
@@ -92,6 +137,15 @@ class AssistantAgent(BaseAgent):
         
         @traceable(name="RAG")
         def rag_node(state: AssistantState) -> AssistantState:
+            """Node responsible for retrieving context information using the RAG agent.
+            This node processes each task in the state and retrieves relevant context using the RAG agent.
+
+            Args:
+                state (AssistantState): The current state of the assistant agent.
+
+            Returns:
+                AssistantState: The updated state after retrieving context.
+            """
             for num, task in state['tasks_'].items():
                 state['context_'][num] = rag_agent.invoke(task) + '\n'
             
@@ -99,6 +153,17 @@ class AssistantAgent(BaseAgent):
         
         @traceable(name="Web search")
         async def web_node(state: AssistantState) -> AssistantState:
+            """
+            Node responsible for performing web searches for tasks that do not have sufficient context.
+            This node checks the context decisions for each task and performs a call to mcp server for 
+            web search if the decision is 'No'.
+
+            Args:
+                state (AssistantState): The current state of the assistant agent.
+
+            Returns:
+                AssistantState: The updated state after performing web searches.
+            """
             for num, task in state['tasks_'].items():
                 if state['context_decisions_'][num] == 'Yes':
                     continue
@@ -117,6 +182,15 @@ class AssistantAgent(BaseAgent):
         
         @traceable(name="Generate questions")
         async def question_node(state: AssistantState) -> AssistantState:
+            """Node responsible for generating exam-style questions based on the tasks and context.
+            This node iterates through the tasks and generates questions using the mcp server exam generation tool.
+
+            Args:
+                state (AssistantState): The current state of the assistant agent.
+
+            Returns:
+                AssistantState: The updated state after generating questions.
+            """
             for num, ques in state['question_tasks_'].items():
                 if not ques:
                     continue
@@ -130,6 +204,15 @@ class AssistantAgent(BaseAgent):
         
         @traceable(name="Summarize Results")
         def sumarize_node(state: AssistantState) -> AssistantState:
+            """
+            Node responsible for summarizing the results of the tasks and generated questions.
+
+            Args:
+                state (AssistantState): The current state of the assistant agent.
+
+            Returns:
+                AssistantState: The updated state after summarizing the results.
+            """
             summary = ""
             questions = state['generated_questions_']
             
@@ -149,6 +232,12 @@ class AssistantAgent(BaseAgent):
             
         #Conditions' routers
         def context_decision(state: AssistantState) -> Literal['question_generation', 'web_search']:
+            """
+            Decides whether to proceed to question generation or web search based on the context decisions and iterations.
+
+            Returns:
+                str: The next state to transition to, either 'question_generation' or 'web_search'.
+            """
             if state['web_search_iterations'] >= MAX_ITERATIONS:
                 return 'question_generation'
             

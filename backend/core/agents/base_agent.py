@@ -11,6 +11,9 @@ from backend.core.validation_methods import validate_llm, validate_string
 
 @dataclass
 class BaseAgent(ABC):
+    """Base class for all agents in the system.
+    This class provides a common interface for agents that can invoke a language model (LLM) to answer questions.
+    """
     llm: BaseChatModel
     prompt: str = field(init=False)
     graph: CompiledGraph = field(init=False)
@@ -22,9 +25,23 @@ class BaseAgent(ABC):
     
     @abstractmethod
     def _create_agent(self):
+        """Create the agent's graph using the provided LLM.
+        This method should be implemented by subclasses to define the specific behavior of the agent.
+        """
         pass
     
     def invoke(self, question: str) -> Optional[str | List[str | Dict]]:
+        """Invoke the agent with a question and return the response.
+
+        Args:
+            question (str): The question to ask the agent.
+
+        Raises:
+            ValueError: If the question is not a valid nonempty string.
+
+        Returns:
+            Optional[str | List[str | Dict]]: The response from the agent, which can be a string or a list of strings or dictionaries.
+        """
         if not validate_string(question):
             raise ValueError("Question must be a valid nonempty string!")
         
@@ -32,6 +49,17 @@ class BaseAgent(ABC):
         return next((msg.content for msg in response['messages'] if isinstance(msg, AIMessage) and msg.content), None)
     
     async def ainvoke(self, question: str) -> Optional[str | List[str | Dict]]:
+        """Asynchronously invoke the agent with a question and return the response.
+
+        Args:
+            question (str): The question to ask the agent.
+
+        Raises:
+            ValueError: If the question is not a valid nonempty string.
+
+        Returns:
+            Optional[str | List[str | Dict]]: The response from the agent, which can be a string or a list of strings or dictionaries.
+        """
         if not validate_string(question):
             raise ValueError("Question must be a valid nonempty string!")
         
