@@ -15,7 +15,7 @@ st.write("You can upload your own decuments that will later get processed via RA
 st.write("You can ask questions and get answers from the Assistant. If the assistant won't find anything relevant to your question in the uploaded documents, it will try to answer your question using the internet search.")
 
 st.subheader("Upload your files here:")
-uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True)
+uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True, type=['pdf', 'txt', 'html', 'md', 'docx', 'pptx'])
 submit_files_button = st.button("Submit Files")
 if submit_files_button:
     if uploaded_files:
