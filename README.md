@@ -141,7 +141,7 @@ The backend API exposes two accessible endpoints:
 # Usage examples
 
 ## Through Streamlit application
-![streamlit UI](https://github.com/user-attachments/assets/03f889d3-b953-4c05-a34c-76130071b615)
+![streamlit UI](https://github.com/user-attachments/assets/166041c4-7572-458b-9d94-a300fe49c1fe)
 
 ## Through Swagger UI
 ![swagger UI](https://github.com/user-attachments/assets/61f59250-c6d5-4e9d-a03a-b59df89956a4)
