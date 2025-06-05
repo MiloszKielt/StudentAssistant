@@ -65,6 +65,10 @@ streamlit run frontend/app.py
 
 # System architecture
 
+## Connections architecture
+![connections between different parts of architecture](https://github.com/user-attachments/assets/30beba9c-ad50-42fa-8cc4-70b6c79f8f1a)
+
+
 ## Folder structure
 
 ```
@@ -132,7 +136,8 @@ The backend API exposes two accessible endpoints:
 # Usage examples
 
 ## Through Streamlit application
+![streamlit UI](https://github.com/user-attachments/assets/03f889d3-b953-4c05-a34c-76130071b615)
 
 ## Through Swagger UI
+![swagger UI](https://github.com/user-attachments/assets/61f59250-c6d5-4e9d-a03a-b59df89956a4)
 
-## Through CLI
