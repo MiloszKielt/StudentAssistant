@@ -166,6 +166,7 @@ class VectorStoreProvider:
                 logger.info("Loading info from vectorstore...")
                 vectorstore = self.__load_vectorstore()
                 if vectorstore:
+                    logger.info("Loading info from vectorstore successful.")
                     self.__retriever = vectorstore.as_retriever(search_kwargs={"k": self.k})
                     return self.__retriever
                 

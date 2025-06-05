@@ -48,18 +48,24 @@ MCP
 
 ```bash
 python -m backend.mcp.mcp_server
+#### OR
+uv run -m backend.mcp.mcp_server # when using uv
 ```
 
 Backend API
 
 ```bash
 uvicorn backend.api.api:app --port 8000
+#### OR
+uv run uvicorn backend.api.api:app --port 8000 # when using uv
 ```
 
 Streamlit app
 
 ```bash
 streamlit run frontend/app.py
+#### OR
+uv run streamlit run frontend/app.py # when using uv
 ```
 
 # System architecture
