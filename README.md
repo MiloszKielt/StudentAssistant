@@ -37,8 +37,7 @@ In order to run the project, you can use either the ready docker-compose file or
 To run the project through docker you simply need to execute:
 
 ```bash
-docker-compose build
-docker-compose run 
+docker-compose up --build
 ```
 
 ## Python
