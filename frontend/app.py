@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_PORT = os.getenv("API_PORT", "8000")
+API_HOST = os.getenv("API_HOST", "localhost")
 
 st.title("Student's Assistant")
 st.write("This is a simple web application to interact with the Assistant.")
@@ -24,7 +25,7 @@ if submit_files_button:
             st.write("File size:", uploaded_file.size)
             try:
                 response = requests.post(
-                    f"http://0.0.0.0:{API_PORT}/upload", 
+                    f"http://{API_HOST}:{API_PORT}/upload", 
                     files={"file": uploaded_file}
                 )
                 # return response.json()
@@ -40,7 +41,7 @@ submit_question_button = st.button("Submit Question")
 if submit_question_button:
     if question:
         # Send the question to the backend API
-        response = requests.post(f"http://0.0.0.0:{API_PORT}/query", json={"query": question})
+        response = requests.post(f"http://{API_HOST}:{API_PORT}/query", json={"query": question})
         if response.status_code == 200:
             answer = response.json().get("answer")
             st.write("Answer:", answer)
