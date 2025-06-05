@@ -26,6 +26,12 @@ exam_agent = ExamGenAgent(LLMFactory.openai())
 
 @method
 def listTools():
+    """List available tools for the MCP server.
+    This method returns a list of tools that can be used by the MCP server.
+    
+    Returns:
+        Success: A list of dictionaries, each containing the name, description, and parameters of a tool.
+    """
     logger.info("listTools called")
     return Success([
         {
@@ -58,6 +64,19 @@ def listTools():
 
 @method
 def callTool(tool: str, args: dict):
+    """Execute a call to a specific tool on the MCP server.
+    This method allows the MCP server to invoke a specific tool with the provided arguments.
+
+    Args:
+        tool (str): The name of the tool to call. Supported tools are "search_web" and "create_exam_questions".
+        args (dict): A dictionary of arguments to pass to the tool. For "search_web", it should contain a "query" 
+        key with the search query string. For "create_exam_questions", it should contain a "query" key with the 
+        topic and an optional "context" key with additional context.
+
+    Returns:
+        Success: If the tool call is successful, it returns a Success object containing the result of the tool call.
+        Error: If the tool is unsupported or if an error occurs during the tool call, it returns an Error object with an error code and message.
+    """
     logger.info(f"callTool called with tool={tool!r}, args={args!r}")
     if tool == "search_web":
         # MUST use (message:str)

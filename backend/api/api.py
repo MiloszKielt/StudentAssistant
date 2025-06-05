@@ -30,14 +30,24 @@ async def upload(file: UploadFile):
 
     Args:
         file (UploadFile): The file to be uploaded.
+        
+    Raises:
+        HTTPException: If an error occurs during file upload or writing.
+        
+    Returns:
+        dict: A dictionary containing the status of the upload and the file path.
     """
     logger.info(f"Received file upload: {file.filename}")
     file_path = f"{Config.UPLOAD_DIR}/{file.filename}"
     try:
         with open(file_path, "wb") as f:
             f.write(file.file.read())
-    except:
+    except Exception as e:
         logger.error("Error while writing the file")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Error while writing the file {str(e)}"
+        )
         
     logger.info("File upload successful")
     return {"status": "success", "file_path" : file_path}
